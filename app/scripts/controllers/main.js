@@ -16,4 +16,18 @@ angular.module('angsmpApp')
     ];
 
     $scope.map = { center: { latitude: 45, longitude: -73 }, zoom: 8 };
+    angular.extend($scope, {
+      map: {
+        center: {
+          latitude: 45,
+          longitude: -73
+        },
+        zoom: 8,
+        events: {
+          tilesloaded: function (map, eventName, originalEventArgs) {
+            console.log(map);
+          }
+        }
+      }
+    });
   }]);
