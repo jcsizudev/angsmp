@@ -12,14 +12,19 @@ angular.module('angsmpApp')
     // AngularJS will instantiate a singleton by calling "new" on this function
     $log.currentLevel = $log.LEVELS.debug;
     this.markers = [];
+    this.markerrefs = [];
     this.addMarker = function (lat, lng) {
-      $log.debug('create marker.');
-      this.markers.push({
-        id: 'sample-' + (this.markers.length + 1),
+      var genid = 'sample-' + (this.markers.length + 1);
+      var genMarker = {
+        id: genid,
         latitude: lat,
         longitude: lng,
-        title: 'sample'
-      });
+        title: genid
+      };
+      $log.debug('create marker:' + genid);
+      this.markers.push(genMarker);
+      this.markerrefs[genid] = genMarker;
       $log.debug(this.markers);
+      $log.debug(this.markerrefs);
     };
   }]);

@@ -36,9 +36,15 @@ angular.module('angsmpApp')
         events: {
           dragend: function (marker, eventName, args) {
             $log.debug('marker dragend');
+
+            RouteMarker.markerrefs[marker.key].latitude = marker.getPosition().lat();
+            RouteMarker.markerrefs[marker.key].longitude = marker.getPosition().lng();
+
             $log.debug(marker.getPosition().lat());
             $log.debug(marker.getPosition().lng());
             $log.debug(marker);
+            $log.debug(RouteMarker.markers);
+            $log.debug(RouteMarker.markerrefs);
           }
         }
       }
