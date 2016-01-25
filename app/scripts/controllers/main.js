@@ -31,6 +31,16 @@ angular.module('angsmpApp')
           }
         }
       },
-      markers: RouteMarker.markers
+      markers: RouteMarker.markers,
+      marker: {
+        events: {
+          dragend: function (marker, eventName, args) {
+            $log.debug('marker dragend');
+            $log.debug(marker.getPosition().lat());
+            $log.debug(marker.getPosition().lng());
+            $log.debug(marker);
+          }
+        }
+      }
     });
   }]);
