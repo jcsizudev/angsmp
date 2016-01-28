@@ -4,3 +4,23 @@
   <ui-gmap-polyline path="polyline.path" stroke="polyline.stroke" visible='polyline.visible' geodesic='polyline.geodesic' fit="false" editable="polyline.editable" draggable="polyline.draggable" icons='polyline.icons'>
   </ui-gmap-polyline>
 </ui-gmap-google-map>
+
+<!-- Modal -->
+<div class="modal fade" id="markerModal" tabindex="-1" role="dialog" aria-labelledby="markerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="markerModalLabel">マーカー設定</h4>
+      </div>
+      <div class="modal-body">
+        <p>緯度:<span id='dlgLatitude'></span></p>
+        <p>経度:<span id='dlgLongitude'></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+        <button type="button" class="btn btn-primary" id="dlgDelBtn">削除</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

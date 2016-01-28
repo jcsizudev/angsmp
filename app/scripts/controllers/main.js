@@ -40,18 +40,30 @@ angular.module('angsmpApp')
           },
           events: {
             dragstart: function (marker, eventName, args) {
-              $log.debug(eventName);
+              $log.debug('marker:' + eventName);
             },
             drag: function (marker, eventName, args) {
-              $log.debug(eventName);
+              $log.debug('marker:' + eventName);
               var curMarker = RouteMarker.getMarker(marker.key);
               curMarker.latitude = marker.getPosition().lat();
               curMarker.longitude = marker.getPosition().lng()
             },
             dragend: function (marker, eventName, args) {
-              $log.debug(eventName);
-           }
+              $log.debug('marker:' + eventName);
+            },
+            click: function (marker, eventName, args) {
+              $log.debug('marker:' + eventName);
+              $log.debug(marker);
+
+              $scope.markers.dialogTarget = marker;
+              marker.setAnimation(google.maps.Animation.BOUNCE);
+
+              $("#dlgLatitude").text(marker.getPosition().lat());
+              $("#dlgLongitude").text(marker.getPosition().lng());
+              $("#markerModal").modal();
+            }
           },
+          dialogTarget: undefined
         },
         polyline: {
           path: RouteMarker.getModel(),
@@ -72,5 +84,24 @@ angular.module('angsmpApp')
           ]
         }
       });
+
+      $("#dlgDelBtn").on('click', function (e) {
+        console.log('dlgDelBtn-click!');
+        if ($scope.markers.dialogTarget !== undefined) {
+          RouteMarker.deleteMarker($scope.markers.dialogTarget.key);
+          $scope.markers.dialogTarget = undefined;
+          $scope.$evalAsync();
+          $("#markerModal").modal('hide');
+        }
+      });
+
+      $("#markerModal").on('hide.bs.modal', function (e) {
+        console.log( "Hide dialog." );
+        if ($scope.markers.dialogTarget !== undefined) {
+          $scope.markers.dialogTarget.setAnimation(null);
+          $scope.markers.dialogTarget = undefined;
+        }
+      });
+
     });
   }]);
