@@ -26,10 +26,13 @@ angular.module('angsmpApp')
               $log.debug(orgEv);
             },
             click: function (mapModel, eventName, orgEv) {
-              $log.debug(eventName);
+              $log.debug('map:' + eventName);
               $log.debug(orgEv);
               RouteMarker.addMarker(orgEv[0].latLng.lat(), orgEv[0].latLng.lng());
               $scope.$evalAsync();
+
+              $log.debug('center-');
+              $log.debug($scope.map.getGMap().getBounds().getNorthEast());
             }
           }
         },
@@ -52,7 +55,12 @@ angular.module('angsmpApp')
               $log.debug('marker:' + eventName);
             },
             click: function (marker, eventName, args) {
+              var sw = $scope.map.getGMap().getBounds().getSouthWest();
+              var ne = $scope.map.getGMap().getBounds().getNorthEast();
+              var cp = $scope.map.getGMap().getCenter();
+
               $log.debug('marker:' + eventName);
+              $log.debug($scope.markers.calcNewMarkerPos(sw, ne, marker.getPosition(), cp));
               $log.debug(marker);
 
               $scope.markers.dialogTarget = marker;
@@ -63,7 +71,31 @@ angular.module('angsmpApp')
               $("#markerModal").modal();
             }
           },
-          dialogTarget: undefined
+          dialogTarget: undefined,
+          calcNewMarkerPos: function (sw, ne, mkp, cp) {
+            var xdir, ydir;
+            var xlen, ylen;
+            // マーカー配置方向決定
+            if (cp.lat() > mkp.lat())
+              ydir = 1.0;
+            else
+              ydir = -1.0;
+            if (cp.lng() > mkp.lng())
+              xdir = 1.0;
+            else
+              xdir = -1.0;
+
+            // マーカー配置距離設定
+            ylen = (sw.lat() - ne.lat()) / 10.0;
+            xlen = (sw.lng() - ne.lng()) / 10.0;
+
+            var newMkp = {
+              latitude: mkp.lat() + (ylen * ydir),
+              longitude: mkp.lng() + (xlen * xdir)
+            };
+
+            return newMkp;
+          }
         },
         polyline: {
           path: RouteMarker.getModel(),
