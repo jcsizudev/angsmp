@@ -85,7 +85,7 @@ angular.module('angsmpApp')
       return this.modelsByGenId[id];
     };
 
-    // メーカー情報削除
+    // マーカー情報削除
     this.deleteMarker = function (id) {
       // ID参照用配列から削除
       delete this.modelsByGenId[id];

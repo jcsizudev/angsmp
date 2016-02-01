@@ -156,7 +156,9 @@ angular.module('angsmpApp')
               }
             }
           ]
-        }
+        },
+        // グリッド用モデル：ルートマーカーのマーカー配列をモデルとする。
+        myData: RouteMarker.getModel()
       });
 
       // ダイアログ操作のイベント定義
