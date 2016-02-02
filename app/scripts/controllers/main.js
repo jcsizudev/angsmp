@@ -38,8 +38,13 @@ angular.module('angsmpApp')
               $log.debug(orgEv);
 
               // クリック位置にマーカーを追加
-              RouteMarker.addMarker(orgEv[0].latLng.lat(), orgEv[0].latLng.lng());
-              $scope.$evalAsync();
+              if ($scope.markers.markerMode) {
+                RouteMarker.addMarker(orgEv[0].latLng.lat(), orgEv[0].latLng.lng());
+                $scope.$evalAsync();
+              }
+            },
+            center_changed: function (mapModel, eventName, orgEv) {
+              $log.debug('center_changed!');
             }
           }
         },
@@ -132,6 +137,20 @@ angular.module('angsmpApp')
               posInfo.longitude,
               prevInsert
             );
+          },
+          // マーカー配置モード
+          markerMode: false,
+          markerModeName: 'ブラウズ',
+          clickToggle: function () {
+            $log.debug('Toggle!');
+            if ($scope.markers.markerMode) {
+              $scope.markers.markerModeName = 'ブラウズ';
+              $scope.markers.markerMode = false;
+            }
+            else {
+              $scope.markers.markerModeName = 'マーカー配置';
+              $scope.markers.markerMode = true;
+            }
           }
         },
         // マーカーを結ぶ線分表示用スコープ
@@ -157,8 +176,46 @@ angular.module('angsmpApp')
             }
           ]
         },
-        // グリッド用モデル：ルートマーカーのマーカー配列をモデルとする。
-        myData: RouteMarker.getModel()
+        // グリッド操作用スコープ：ルートマーカーのマーカー配列をモデルとする。
+        gridOptions: {
+          enableGridMenu: true,
+          gridMenuCustomItems: [
+            {
+              title: '選択したマーカーを削除　　',
+              action: function (event) {
+                $log.debug('GridMenu!');
+                if ($scope.gridApi.selection !== undefined) {
+                  var selected = $scope.gridApi.selection.getSelectedRows();
+                  for (var i = 0; i < selected.length; i++) {
+                    RouteMarker.deleteMarker(selected[i].id);
+                  }
+                  $scope.gridApi.selection.clearSelectedRows();
+                  $scope.$evalAsync();
+                }
+              },
+              order: 2
+            }
+          ],
+          gridMenuShowHideColumns: false,
+          data: RouteMarker.getModel(),
+          columnDefs: [
+            {name: 'id', displayName: 'ID', visible: false},
+            {name: 'title', displayName: 'ラベル', enableCellEdit: true},
+            {name: 'latitude', displayName: '緯度', enableCellEdit: true},
+            {name: 'longitude', displayName: '経度', enableCellEdit: true}
+          ],
+          enableCellEditOnFocus: true,
+          multiSelect: false,
+          onRegisterApi: function (gridApi) {
+            gridApi.selection.on.rowSelectionChanged($scope, function(row) {
+              $log.debug('row selection changed!');
+              $log.debug(row);
+              $scope.gridApi = gridApi;
+              $scope.map.getGMap().panTo(new maps.LatLng(row.entity.latitude,row.entity.longitude));
+            });
+          }
+        },
+        gridApi: {}
       });
 
       // ダイアログ操作のイベント定義

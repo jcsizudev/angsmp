@@ -17,7 +17,10 @@ angular
     'ngSanitize',
     'ngTouch',
     'uiGmapgoogle-maps',
-    'ui.grid'
+    'ui.grid',
+    'ui.grid.edit',
+    'ui.grid.cellNav',
+    'ui.grid.selection'
   ])
   .config(['$routeProvider', 'uiGmapGoogleMapApiProvider', function ($routeProvider, GoogleMapApi) {
     $routeProvider

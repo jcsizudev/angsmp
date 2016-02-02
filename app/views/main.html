@@ -1,3 +1,18 @@
+<div class="row">
+  <div class="col-md-2">
+    <button type="button"
+      class="btn btn-primary"
+      data-toggle="button"
+      aria-pressed="false"
+      autocomplete="off"
+      ng-click='markers.clickToggle()'>{{markers.markerModeName}}</button>
+  </div>
+  <div class="col-md-2">
+    <button type="button" class="btn btn-secondary">ルート移動</button>
+   </div>
+</div>
+<div>&nbsp;</div>
+
 <ui-gmap-google-map center='map.center' control='map' zoom='map.zoom' events='map.events'>
   <ui-gmap-markers models="markers.models" coords="'self'" icon="'icon'" options="markers.options" events='markers.events'>
   </ui-gmap-markers>
@@ -5,7 +20,7 @@
   </ui-gmap-polyline>
 </ui-gmap-google-map>
 
-<div id="grid1" ui-grid="{ data: myData }" class="myGrid"></div>
+<div id="grid1" ui-grid="gridOptions" class="myGrid" ui-grid-edit ui-grid-cellnav ui-grid-selection></div>
 
 <!-- Modal -->
 <div class="modal fade" id="markerModal" tabindex="-1" role="dialog" aria-labelledby="markerModalLabel" aria-hidden="true">
