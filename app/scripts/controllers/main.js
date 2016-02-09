@@ -8,7 +8,7 @@
  * Controller of the angsmpApp
  */
 angular.module('angsmpApp')
-  .controller('MainCtrl', [ '$scope', 'uiGmapLogger', 'RouteMarker', 'uiGmapGoogleMapApi', function ($scope, $log, RouteMarker, GoogleMapApi) {
+  .controller('MainCtrl', [ '$scope', '$timeout', 'uiGmapLogger', 'RouteMarker', 'uiGmapGoogleMapApi', function ($scope, $timeout, $log, RouteMarker, GoogleMapApi) {
     $log.currentLevel = $log.LEVELS.debug;  // ログレベルの設定
     $scope.test = 'set';  // テスト動作確認用
 
@@ -45,6 +45,19 @@ angular.module('angsmpApp')
             },
             center_changed: function (mapModel, eventName, orgEv) {
               $log.debug('center_changed!');
+              if ($scope.markers.currentWalk !== '') {
+                // ルート移動中ならば次のマーカーへ移動
+                var mkr = RouteMarker.nextMarker($scope.markers.currentWalk);
+                if (mkr !== undefined) {
+                  $scope.markers.currentWalk = mkr.id;
+                  $timeout(function () {
+                    $scope.map.getGMap().panTo(new maps.LatLng(mkr.latitude,mkr.longitude));
+                  }, 1000);
+                }
+                else {
+                  $scope.markers.currentWalk = '';
+                }
+              }
             }
           }
         },
@@ -124,15 +137,15 @@ angular.module('angsmpApp')
             return newMkp;
           },
           // マーカー挿入
-          insertNewMarker: function (marker, prevInsert) {
+          insertNewMarker: function (markerKey, markerPos, prevInsert) {
             var posInfo = $scope.markers.calcNewMarkerPos(
               $scope.map.getGMap().getBounds().getSouthWest(),
               $scope.map.getGMap().getBounds().getNorthEast(),
-              marker.getPosition(),
+              markerPos,
               $scope.map.getGMap().getCenter()
             );
             RouteMarker.insMarker(
-              marker.key,
+              markerKey,
               posInfo.latitude,
               posInfo.longitude,
               prevInsert
@@ -150,6 +163,15 @@ angular.module('angsmpApp')
             else {
               $scope.markers.markerModeName = 'マーカー配置';
               $scope.markers.markerMode = true;
+            }
+          },
+          // ルートに沿って移動
+          currentWalk: '',
+          walkRoute: function () {
+            var mkr = RouteMarker.nextMarker($scope.markers.currentWalk);
+            if (mkr !== undefined) {
+              $scope.markers.currentWalk = mkr.id;
+              $scope.map.getGMap().panTo(new maps.LatLng(mkr.latitude,mkr.longitude));
             }
           }
         },
@@ -181,9 +203,9 @@ angular.module('angsmpApp')
           enableGridMenu: true,
           gridMenuCustomItems: [
             {
-              title: '選択したマーカーを削除　　',
+              title: '選択したマーカーを削除',
               action: function (event) {
-                $log.debug('GridMenu!');
+                $log.debug('GridMenu-delete');
                 if ($scope.gridApi.selection !== undefined) {
                   var selected = $scope.gridApi.selection.getSelectedRows();
                   for (var i = 0; i < selected.length; i++) {
@@ -194,6 +216,54 @@ angular.module('angsmpApp')
                 }
               },
               order: 2
+            },
+            {
+              title: '選択マーカーの直前にマーカーを挿入',
+              action: function (event) {
+                $log.debug('GridMenu-ins-prev');
+                if ($scope.gridApi.selection !== undefined) {
+                  var selected = $scope.gridApi.selection.getSelectedRows();
+                  if (selected.length > 0) {
+                    var mkp = new maps.LatLng(selected[0].latitude, selected[0].longitude);
+                    $scope.markers.insertNewMarker(selected[0].id, mkp, true);
+                    $scope.$evalAsync();
+                  }
+                }
+              },
+              order: 3
+            },
+            {
+              title: '選択マーカーの直後にマーカーを挿入',
+              action: function (event) {
+                $log.debug('GridMenu-ins-next');
+                if ($scope.gridApi.selection !== undefined) {
+                  var selected = $scope.gridApi.selection.getSelectedRows();
+                  if (selected.length > 0) {
+                    var mkp = new maps.LatLng(selected[0].latitude, selected[0].longitude);
+                    $scope.markers.insertNewMarker(selected[0].id, mkp, false);
+                    $scope.$evalAsync();
+                  }
+                }
+              },
+              order: 4
+            },
+            {
+              title: '末尾にマーカーを追加',
+              action: function (event) {
+                $log.debug('GridMenu-add');
+                var mdl = RouteMarker.prevMarker('');
+                var pos = {};
+                if (mdl === undefined) {
+                  pos = $scope.map.getGMap().getCenter();
+                  RouteMarker.addMarker(pos.lat(), pos.lng());
+                }
+                else {
+                  pos = new maps.LatLng(mdl.latitude, mdl.longitude);
+                  $scope.markers.insertNewMarker(mdl.id, pos, false);
+                }
+                $scope.$evalAsync();
+              },
+              order: 5
             }
           ],
           gridMenuShowHideColumns: false,
@@ -233,7 +303,11 @@ angular.module('angsmpApp')
       $('#dlgInsPrev').on('click', function (e) {
         $log.debug('dlgInsPrev-click!');
         if ($scope.markers.dialogTarget !== undefined) {
-          $scope.markers.insertNewMarker($scope.markers.dialogTarget, true);
+          $scope.markers.insertNewMarker(
+            $scope.markers.dialogTarget.key,
+            $scope.markers.dialogTarget.getPosition(),
+            true
+          );
           $scope.$evalAsync();
           $('#markerModal').modal('hide');
         }
@@ -243,7 +317,11 @@ angular.module('angsmpApp')
       $('#dlgInsNext').on('click', function (e) {
         $log.debug('dlgInsNext-click!');
         if ($scope.markers.dialogTarget !== undefined) {
-          $scope.markers.insertNewMarker($scope.markers.dialogTarget, false);
+          $scope.markers.insertNewMarker(
+            $scope.markers.dialogTarget.key,
+            $scope.markers.dialogTarget.getPosition(),
+            false
+          );
           $scope.$evalAsync();
           $('#markerModal').modal('hide');
         }

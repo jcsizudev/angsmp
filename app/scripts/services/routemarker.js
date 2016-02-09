@@ -85,6 +85,50 @@ angular.module('angsmpApp')
       return this.modelsByGenId[id];
     };
 
+    // モデル格納順マーカー情報取得(順方向)
+    this.nextMarker = function (id) {
+      if (id === '') {
+        if (this.models.length > 0) {
+          return this.models[0];
+        }
+      }
+      else {
+        for (var i = 0; i < this.models.length; i++) {
+          if (this.models[i].id === id) {
+            if (i === (this.models.length - 1)) {
+              return undefined;
+            }
+            else {
+              return this.models[i + 1];
+            }
+          }
+        }
+      }
+      return undefined;
+    };
+
+    // モデル格納順マーカー情報取得(逆方向)
+    this.prevMarker = function (id) {
+      if (id === '') {
+        if (this.models.length > 0) {
+          return this.models[this.models.length - 1];
+        }
+      }
+      else {
+        for (var i = 0; i < this.models.length; i++) {
+          if (this.models[i].id === id) {
+            if (i === 0) {
+              return undefined;
+            }
+            else {
+              return this.models[i - 1];
+            }
+          }
+        }
+      }
+      return undefined;
+    };
+
     // マーカー情報削除
     this.deleteMarker = function (id) {
       // ID参照用配列から削除
